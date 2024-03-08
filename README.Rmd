@@ -1,0 +1,67 @@
+---
+output: github_document
+---
+
+# Programming Assignment 2
+
+## Load packages and data
+```{r, load-packages-data}
+library("tidyverse")
+library("here")
+
+
+data <- read_csv(here("data", "data.csv"))
+
+summary(data)
+glimpse(data)
+
+```
+
+## Tidy data
+```{r, tidy-data}
+data_final <- data %>%
+  pivot_longer(
+    cols = durationV:int,
+    names_to = "measure",
+    values_to = "values") %>%
+  separate(
+    col = info,
+    into = c("word", "stress"),
+    sep = "_")
+
+# 1 = stressed vowel
+# 2 = unstressed vowel
+```
+
+## Average duration, f0, and intensity as a function of lexical stress
+
+### Calculations
+```{r, calculations}
+data_final %>%
+  group_by(stress, measure) %>%
+  summarize(avg = mean(values)) %>%
+  pivot_wider(names_from = "stress", values_from = "avg")
+
+```
+
+### Plots
+```{r, plots}
+data_final %>%
+  ggplot() +
+  aes(x = measure, y = values, color = stress) +
+  geom_boxplot() +
+  scale_color_discrete(labels = c("stressed", "unstressed")) +
+  labs(title = "Acoustic dimensions as a function of lexical stress") +
+  theme(legend.position = c(0.90, 0.87)) 
+
+data_final %>%
+  group_by(stress, measure) %>%
+  summarise(avg = mean(values)) %>%
+  ggplot(aes(x = measure, y = avg, color = factor(stress))) +
+  geom_point() +
+  scale_color_discrete(labels = c("stressed", "unstressed"), name = "stress") +
+  labs(title = "Average values of acoustic dimensions as a function of lexical stress") +
+  theme(legend.position = c(0.90, 0.87)) 
+
+```
+
